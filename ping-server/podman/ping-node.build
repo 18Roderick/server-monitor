@@ -1,0 +1,10 @@
+# Requires Podman >= 5.0 (Quadlet .build units).
+# Edit SetWorkingDirectory below to the absolute path where this repo is checked out.
+[Unit]
+Description=Build ping-server runtime image
+
+[Build]
+ImageTag=localhost/ping-node:latest
+File=Dockerfile
+Target=runtime
+SetWorkingDirectory=/path/to/ping-server

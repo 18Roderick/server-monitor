@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: ping-database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - ping-db-data:/var/lib/postgresql/data
+    networks:
+      - ping-net
+    environment:
+      - POSTGRES_USER=monitoruser
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=pingdom
+
+  # node:
+  #   build:
+  #     context: .
+  #     dockerfile: "Dockerfile"
+  #   restart: unless-stopped
+  #   env_file: ./.env
+  #   depends_on:
+  #     - database
+  #     - valkey
+  #   environment:
+  #     - NODE_ENV=production
+  #     - DATABASE_URL=postgres://monitoruser:123456@database:5432/pingdom
+  #     - REDIS_HOST=valkey
+  #     - REDIS_PORT=6379
+  #   networks:
+  #     - ping-net
+  #   ports:
+  #     - 3000:3000
+
+  valkey:
+    image: valkey/valkey:9-alpine
+    container_name: ping-cache
+    restart: unless-stopped
+    networks:
+      - ping-net
+    volumes:
+      - ping-cache-data:/data
+    ports:
+      - 6379:6379
+
+networks:
+  ping-net:
+volumes:
+  ping-db-data:
+  ping-cache-data:

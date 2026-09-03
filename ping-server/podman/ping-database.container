@@ -1,0 +1,19 @@
+[Unit]
+Description=ping-server Postgres database
+After=ping-net-network.service
+
+[Container]
+Image=docker.io/library/postgres:16-alpine
+ContainerName=ping-database
+Network=ping-net.network
+Volume=ping-db-data.volume:/var/lib/postgresql/data
+PublishPort=5432:5432
+Environment=POSTGRES_USER=monitoruser
+Environment=POSTGRES_PASSWORD=123456
+Environment=POSTGRES_DB=pingdom
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

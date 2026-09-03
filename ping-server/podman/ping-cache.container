@@ -1,0 +1,16 @@
+[Unit]
+Description=ping-server Valkey cache/queue
+After=ping-net-network.service
+
+[Container]
+Image=docker.io/valkey/valkey:9-alpine
+ContainerName=ping-cache
+Network=ping-net.network
+Volume=ping-cache-data.volume:/data
+PublishPort=6379:6379
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,398 @@
+{
+  "id": "80b23979-4ee9-4b7f-9560-fae90f9a9eb6",
+  "prevId": "bc331890-615b-42e4-bb7d-de4a79604064",
+  "version": "6",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pingdom_logs": {
+      "name": "pingdom_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(200)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_user": {
+          "name": "id_user",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(5000)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error_level": {
+          "name": "error_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'info'"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(5000)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "affected_entity": {
+          "name": "affected_entity",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pingdom_pings": {
+      "name": "pingdom_pings",
+      "schema": "",
+      "columns": {
+        "id_ping": {
+          "name": "id_ping",
+          "type": "varchar(200)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "times": {
+          "name": "times",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "packet_loss": {
+          "name": "packet_loss",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min": {
+          "name": "min",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max": {
+          "name": "max",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avg": {
+          "name": "avg",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log": {
+          "name": "log",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_alive": {
+          "name": "is_alive",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numeric_host": {
+          "name": "numeric_host",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "id_server": {
+          "name": "id_server",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pingdom_pings_id_server_pingdom_servers_id_server_fk": {
+          "name": "pingdom_pings_id_server_pingdom_servers_id_server_fk",
+          "tableFrom": "pingdom_pings",
+          "tableTo": "pingdom_servers",
+          "columnsFrom": [
+            "id_server"
+          ],
+          "columnsTo": [
+            "id_server"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pingdom_servers": {
+      "name": "pingdom_servers",
+      "schema": "",
+      "columns": {
+        "id_server": {
+          "name": "id_server",
+          "type": "varchar(200)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip": {
+          "name": "ip",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "worker_type": {
+          "name": "worker_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "id_user": {
+          "name": "id_user",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pingdom_servers_id_user_pingdom_users_id_user_fk": {
+          "name": "pingdom_servers_id_user_pingdom_users_id_user_fk",
+          "tableFrom": "pingdom_servers",
+          "tableTo": "pingdom_users",
+          "columnsFrom": [
+            "id_user"
+          ],
+          "columnsTo": [
+            "id_user"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pingdom_tasks": {
+      "name": "pingdom_tasks",
+      "schema": "",
+      "columns": {
+        "id_task": {
+          "name": "id_task",
+          "type": "varchar(200)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_job": {
+          "name": "id_job",
+          "type": "varchar(300)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log": {
+          "name": "log",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'undefined'"
+        },
+        "cron": {
+          "name": "cron",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'running'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "id_server": {
+          "name": "id_server",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retries_failed": {
+          "name": "retries_failed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pingdom_tasks_id_server_pingdom_servers_id_server_fk": {
+          "name": "pingdom_tasks_id_server_pingdom_servers_id_server_fk",
+          "tableFrom": "pingdom_tasks",
+          "tableTo": "pingdom_servers",
+          "columnsFrom": [
+            "id_server"
+          ],
+          "columnsTo": [
+            "id_server"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.pingdom_users": {
+      "name": "pingdom_users",
+      "schema": "",
+      "columns": {
+        "id_user": {
+          "name": "id_user",
+          "type": "varchar(200)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar(191)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pingdom_users_email_unique": {
+          "name": "pingdom_users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

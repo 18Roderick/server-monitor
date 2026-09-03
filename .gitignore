@@ -1,0 +1,72 @@
+# dependencies
+node_modules/
+/.pnp
+.pnp.js
+jspm_packages/
+web_modules/
+bower_components/
+
+# build output
+dist/
+build/
+/out/
+/.next/
+.nuxt/
+.vuepress/dist
+.docusaurus
+.serverless/
+.fusebox/
+.dynamodb/
+.webpack/
+.svelte-kit
+.cache/
+.parcel-cache
+.tern-port
+.vscode-test
+
+# coverage / testing
+coverage/
+*.lcov
+.nyc_output
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.eslintcache
+.stylelintcache
+
+# env / secrets
+.env
+.env*.local
+*.key
+*.pem
+
+# runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+*.tgz
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+.vercel
+
+# turborepo
+.turbo/

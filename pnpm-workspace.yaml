@@ -1,0 +1,11 @@
+packages:
+  - "ping-client"
+  - "ping-server"
+
+allowBuilds:
+  bcrypt: true
+  esbuild: true
+  msgpackr-extract: true
+
+overrides:
+  esbuild: ">=0.25.0"

@@ -1,0 +1,1 @@
+ALTER TABLE "pingdom_tasks" DROP COLUMN IF EXISTS "name";

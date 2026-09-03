@@ -1,0 +1,22 @@
+# Edit EnvironmentFile below to the absolute path of this repo's .env file.
+[Unit]
+Description=ping-server app
+After=ping-database.service ping-cache.service
+Requires=ping-database.service ping-cache.service
+
+[Container]
+Image=ping-node.build
+ContainerName=ping-node
+Network=ping-net.network
+EnvironmentFile=/path/to/ping-server/.env
+Environment=NODE_ENV=production
+Environment=DATABASE_URL=postgres://monitoruser:123456@ping-database:5432/pingdom
+Environment=REDIS_HOST=ping-cache
+Environment=REDIS_PORT=6379
+PublishPort=3000:3000
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
