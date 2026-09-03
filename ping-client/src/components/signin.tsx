@@ -19,7 +19,6 @@ import { Input } from "./ui/input";
 import * as api from "@/api";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
-import useToken from "@/hooks/useToken";
 import { useAuth } from "@/hooks/useAuth";
 
 const formSchema = z.object({

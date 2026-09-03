@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Link, type LinkProps } from '@tanstack/react-router';
-import { Server, User2Icon, XIcon } from 'lucide-react';
+import { Server, User2Icon } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavbarProps extends LinkProps {

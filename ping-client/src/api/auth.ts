@@ -11,12 +11,12 @@ export type SignUp = {
   password: string;
 };
 
-export async function signIn(dto: SignIn, ...rest: unknown[]) {
+export async function signIn(dto: SignIn) {
   const response = await httpClient.post<{ token: string }>("/auth/signin", dto);
   return response.data;
 }
 
-export async function signUp(dto: SignUp, ...rest: unknown[]) {
+export async function signUp(dto: SignUp) {
   const response = await httpClient.post<{ token: string }>("/auth/signup", dto);
   return response.data;
 }
