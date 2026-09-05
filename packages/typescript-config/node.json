@@ -1,0 +1,19 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./base.json",
+	"compilerOptions": {
+		"module": "node16",
+		"moduleResolution": "node16",
+		"noUncheckedIndexedAccess": true,
+		"declaration": true,
+		"removeComments": true,
+		"allowSyntheticDefaultImports": true,
+		"sourceMap": true,
+		"incremental": true,
+		"strictNullChecks": true,
+		"strictBindCallApply": false,
+		"forceConsistentCasingInFileNames": false,
+		"noFallthroughCasesInSwitch": false,
+		"noImplicitAny": true
+	}
+}

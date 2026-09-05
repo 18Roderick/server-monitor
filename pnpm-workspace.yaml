@@ -1,6 +1,6 @@
 packages:
-  - "ping-client"
-  - "ping-server"
+  - "apps/*"
+  - "packages/*"
 
 allowBuilds:
   bcrypt: true
