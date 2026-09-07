@@ -35,6 +35,17 @@ export class InternalServerError extends Schema.TaggedError<InternalServerError>
   HttpApiSchema.annotations({ status: 500 }),
 ) {}
 
+/**
+ * A Server's Monitor Mode is fixed at creation (see CONTEXT.md) — an update
+ * payload whose `mode` disagrees with the server's stored `worker_type` is a
+ * client error, not a mismatch to silently reconcile.
+ */
+export class ServerMonitorModeMismatchError extends Schema.TaggedError<ServerMonitorModeMismatchError>()(
+  'ServerMonitorModeMismatchError',
+  { message: Schema.String },
+  HttpApiSchema.annotations({ status: 400 }),
+) {}
+
 export class PingError extends Schema.TaggedError<PingError>()(
   'PingError',
   { message: Schema.String },

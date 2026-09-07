@@ -5,8 +5,12 @@ A monitoring context: users register the Servers they want watched, and the syst
 ## Language
 
 **Server**:
-A monitored target — a URL or IP address the system checks on a schedule. Not a machine the application runs on.
+A monitored target — a URL or IP address the system checks on a schedule. Not a machine the application runs on. A Server has exactly one Monitor Mode; it does not check both a URL and an IP at once.
 _Avoid_: Host, target, endpoint
+
+**Monitor Mode**:
+Which of the two ways a Server is checked: `url` (HTTP reachability) or `ip` (ICMP reachability). Fixed at creation; a Server cannot switch Monitor Mode later — to change it, delete the Server and register a new one.
+_Avoid_: worker_type (the column name; not a term to use in conversation or UI copy)
 
 **Ping**:
 One reachability check performed against a Server, and its recorded result (alive/dead, latency, packet loss).

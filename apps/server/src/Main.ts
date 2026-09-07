@@ -4,6 +4,7 @@ import { NodeRuntime } from '@effect/platform-node';
 import { AppConfigLive } from '@/Config';
 import { DbLive } from '@/Db/Db';
 import { RedisConnectionLive } from '@/Queue/Connection';
+import { PingEventsServiceLive } from '@/Queue/PingEvents';
 import { JwtLive } from '@/Auth/Jwt';
 import { AuthServiceLive } from '@/Auth/Auth.service';
 import { UsersServiceLive } from '@/Users/Users.service';
@@ -14,7 +15,7 @@ import { SchedulerServiceLive } from '@/Jobs/Scheduler';
 import { ServersServiceLive } from '@/Servers/Servers.service';
 import { HttpServerLive } from '@/Http/Server';
 
-const InfraLive = Layer.mergeAll(DbLive, RedisConnectionLive, JwtLive).pipe(
+const InfraLive = Layer.mergeAll(DbLive, RedisConnectionLive, JwtLive, PingEventsServiceLive).pipe(
   Layer.provideMerge(AppConfigLive),
 );
 

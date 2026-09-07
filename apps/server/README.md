@@ -1,90 +1,39 @@
 # Ping Server
 
-Una aplicación para ver el estado de su página web.
+Backend de `server-monitor`: los usuarios registran los Servers (URLs o IPs) que quieren vigilar, y el sistema los pinguea periódicamente, guardando el resultado como Pings. Ver [CONTEXT.md](./CONTEXT.md) para el glosario de dominio y [docs/adr/](./docs/adr/) para las decisiones de arquitectura.
 
-## Descripción
+Construido con [Effect-ts](https://effect.website/) (`HttpApi`), Drizzle ORM + Postgres, y BullMQ + Redis para la programación de tareas.
 
-Ping Server es una herramienta diseñada para monitorear el estado de cualquier página web. Utilizando esta aplicación, puede verificar si su sitio web está en línea y funcionando correctamente.
+## Documentación de la API
 
-## Características
+Con el servidor corriendo, la documentación OpenAPI (auto-generada desde los schemas) está disponible en `/docs`.
 
-- Monitoreo de uptime
-- Alertas en tiempo real
-- Informes detallados
-- Fácil de usar
+## Desarrollo
 
-## Tecnologías Utilizadas
+Este paquete forma parte del monorepo pnpm+Turborepo en la raíz del repo. Desde la raíz:
 
-- **TypeScript**: 95.5%
-- **Dockerfile**: 3.5%
-- **JavaScript**: 1%
+```sh
+pnpm install
+pnpm --filter server run dev
+```
 
-## Instalación
+O con Docker (levanta Postgres + Valkey + el servidor):
 
-### Prerrequisitos
+```sh
+docker compose up
+```
 
-- Node.js
-- Docker
+Variables de entorno (`apps/server/.env`, ver `src/Config.ts`): `DATABASE_URL`, `PORT`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` (opcional), `JWT_SECRET`.
 
-### Pasos
+## Estado actual
 
-1. Clone el repositorio:
-    ```sh
-    git clone https://github.com/18Roderick/ping-server.git
-    ```
-
-2. Instale las dependencias:
-    ```sh
-    cd ping-server
-    npm install
-    ```
-
-3. Inicie la aplicación:
-    ```sh
-    npm start
-    ```
-
-## Uso
-
-Una vez que la aplicación esté en funcionamiento, puede acceder a la interfaz de usuario para agregar las URLs que desea monitorear.
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, siga los siguientes pasos:
-
-1. Fork el repositorio
-2. Cree una nueva rama (`git checkout -b feature/nueva-caracteristica`)
-3. Realice sus cambios y haga commits (`git commit -m 'Agregar nueva característica'`)
-4. Envíe sus cambios (`git push origin feature/nueva-caracteristica`)
-5. Abra un Pull Request
+- **Auth**: signup/signin con JWT — hecho. Refresh token — pendiente.
+- **Users**: CRUD completo (`findAll`, `findOne`, `update`, `remove`) — hecho.
+- **Servers**: CRUD completo, aislado por usuario — hecho.
+- **Pings**: lectura y borrado por Server/usuario — hecho. No hay campos editables en un Ping (es una medición inmutable, ver `CONTEXT.md`).
+- **Tasks**: creación automática al registrar un Server, auto-pausa tras 3 fallos consecutivos, reconciliación al arrancar — hecho. Borrado explícito de un Task (fuera del que cascadea al borrar su Server) — pendiente.
+- **Dashboard / alertas en tiempo real**: pendiente — es la próxima feature grande del roadmap.
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT. Consulte el archivo [LICENSE](LICENSE) para obtener más detalles.
-
-## Contacto
-
-Para cualquier pregunta o sugerencia, por favor contacte a:
-- [18Roderick](https://github.com/18Roderick)
-
-### Pending todo parts of the application
-
-- Authentication
-  - TOKEN (done)
-  - Refresh token
-- Users
-  - Update
-  - Delete
-  - Create
-  - Select
-- Servers
-  - Create (done)
-  - Update (done)
-  - Delete (done)
-  - Select (done)
-- Tasks
-  - Add run pings and create the logs for the database
-  - Delete tasks
-- Dashboards
-  - Realtime data of the pings
-  - Graph of the up/down times of the server across the time
+UNLICENSED — proyecto privado.

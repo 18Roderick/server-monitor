@@ -3,6 +3,7 @@ import { Queue, Worker, type Job } from 'bullmq';
 import { eq } from 'drizzle-orm';
 
 import { RedisConnection } from '@/Queue/Connection';
+import { PingEventsService } from '@/Queue/PingEvents';
 import { Db, type Database } from '@/Db/Db';
 import { logs, pings, servers, tasks, type Task } from '@/Db/schemas';
 import { makePing } from '@/Ping/ping';
@@ -41,10 +42,13 @@ export class QueuePingService extends Context.Tag('QueuePingService')<
   }
 >() {}
 
-const runPingJob = (
+// exported for unit testing — the coordinator's core retry/auto-pause
+// decisions live here, independent of the Worker/Queue wiring below
+export const runPingJob = (
   db: Database,
   queue: Queue<AddPingTask>,
   job: Job<AddPingTask>,
+  pingEvents: Context.Tag.Service<typeof PingEventsService>,
 ) =>
   Effect.gen(function* () {
     const server = yield* Effect.promise(() =>
@@ -95,6 +99,14 @@ const runPingJob = (
           numeric_host: data.numeric_host ?? destination,
         }),
       );
+      yield* pingEvents.publish({
+        type: 'ping',
+        idServer: row.id_server,
+        idUser: row.id_user,
+        isAlive: data.alive,
+        avg: data.avg,
+        createdAt: new Date().toISOString(),
+      });
       return;
     }
 
@@ -123,6 +135,12 @@ const runPingJob = (
             affected_entity: 'TASKS',
           }),
         );
+        yield* pingEvents.publish({
+          type: 'task-stopped',
+          idServer: row.id_server,
+          idUser: row.id_user,
+          idTask: task.id_task,
+        });
       } else {
         yield* Effect.promise(() =>
           db
@@ -153,6 +171,7 @@ export const QueuePingServiceLive = Layer.scoped(
   Effect.gen(function* () {
     const connection = yield* RedisConnection;
     const db = yield* Db;
+    const pingEvents = yield* PingEventsService;
     const runtime = yield* Effect.runtime<never>();
 
     const queue = new Queue<AddPingTask>(QUEUE_PING_NAME, {
@@ -165,7 +184,7 @@ export const QueuePingServiceLive = Layer.scoped(
 
     const worker = new Worker<AddPingTask>(
       QUEUE_PING_NAME,
-      (job) => Runtime.runPromise(runtime)(runPingJob(db, queue, job)),
+      (job) => Runtime.runPromise(runtime)(runPingJob(db, queue, job, pingEvents)),
       { connection },
     );
 
@@ -255,6 +274,13 @@ export const QueuePingServiceLive = Layer.scoped(
                 .where(eq(tasks.id_task, idTask))
                 .returning(),
             catch: (cause) => new DbError({ cause }),
+          });
+
+          yield* pingEvents.publish({
+            type: 'task-resumed',
+            idServer: server.id_server,
+            idUser: server.id_user,
+            idTask,
           });
           return updated[0] ?? task;
         }),

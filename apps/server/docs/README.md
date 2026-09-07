@@ -1,6 +1,6 @@
-# ping-server
+# Docs
 
-Una aplicacion para ver el estado de su pagina web
-
-cambiar todas las extensiones de js a ts de un directorio
-find . -type f -name "\*.js" -exec rename 's/\.js$/\.ts/' {} \;
+- `adr/` — architecture decision records.
+- `ping.md` — original product spec (auth + server monitoring goals).
+- `databasemodel.drawio` — entity-relationship diagram (open with [draw.io](https://app.diagrams.net/)).
+- `pgmigration.sql` — one-off migration notes.

@@ -18,17 +18,16 @@ httpClient.interceptors.request.use((config) => {
   return config;
 });
 
-httpClient.interceptors.response.use((config) => {
-  
-  if (
-    config.status === 401 &&
-    "message" in config.data &&
-    config.data.message === "Unauthorized"
-  ) {
-    saveToken({ token: "" });
-    const url = new URL(`${window.location.origin}/auth/signin`);
+httpClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      saveToken({ token: "" });
+      const url = new URL(`${window.location.origin}/auth/signin`);
 
-    window.location.replace(url.href);
-  }
-  return config;
-});
+      window.location.replace(url.href);
+    }
+
+    return Promise.reject(error);
+  },
+);

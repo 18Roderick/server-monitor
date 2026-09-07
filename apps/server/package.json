@@ -6,6 +6,10 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "files": [
+    "dist",
+    "drizzle"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -15,6 +19,7 @@
     "db:push": "npx drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "lint": "oxlint --fix",
+    "lint:ci": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
@@ -32,8 +37,7 @@
     "jsonwebtoken": "^9.0.3",
     "luxon": "^3.7.2",
     "ping": "^1.0.0",
-    "postgres": "^3.4.9",
-    "socket.io": "^4.8.3"
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@repo/oxlint-config": "workspace:*",

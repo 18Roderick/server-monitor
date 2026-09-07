@@ -20,7 +20,8 @@ export class QueueManagerService extends Context.Tag('QueueManagerService')<
   }
 >() {}
 
-const runAddPingTaskJob = (
+// exported for unit testing — see the same note in QueuePing.ts
+export const runAddPingTaskJob = (
   db: Database,
   queuePing: Context.Tag.Service<typeof QueuePingService>,
   job: Job<AddPingTask>,

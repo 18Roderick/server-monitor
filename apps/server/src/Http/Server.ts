@@ -11,6 +11,7 @@ import { UsersHandlersLive } from '@/Users/Users.handlers';
 import { ServersHandlersLive } from '@/Servers/Servers.handlers';
 import { PingsHandlersLive } from '@/Pings/Pings.handlers';
 import { TaskHandlersLive } from '@/Queue/Task.handlers';
+import { SseRouteLive } from '@/Http/SseRoute';
 
 const ApiLive = HttpApiBuilder.api(Api).pipe(
   Layer.provide(AuthHandlersLive),
@@ -18,6 +19,7 @@ const ApiLive = HttpApiBuilder.api(Api).pipe(
   Layer.provide(ServersHandlersLive),
   Layer.provide(PingsHandlersLive),
   Layer.provide(TaskHandlersLive),
+  Layer.provide(SseRouteLive),
   Layer.provide(AuthorizationLive),
 );
 

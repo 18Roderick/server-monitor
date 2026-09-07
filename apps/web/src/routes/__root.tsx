@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { AuthContext } from "@/hooks/useAuth";
 import type { QueryClient } from "@tanstack/react-query";
@@ -23,7 +24,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 					</div>
 				</TooltipProvider>
 
-				{/* <Toaster /> */}
+				<Toaster />
 				<TanStackRouterDevtools />
 			</>
 		);

@@ -1,0 +1,16 @@
+# Files not needed inside the build context / final image.
+# See https://docs.docker.com/engine/reference/builder/#dockerignore-file
+
+**/.git
+**/.gitignore
+**/.env
+**/.vscode
+**/.cache
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.turbo
+docker-compose*
+LICENSE
+README.md

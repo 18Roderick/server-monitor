@@ -4,13 +4,13 @@ import { Schema } from 'effect';
 import { Authorization } from '@/Auth/CurrentUser';
 import { IdParam } from '@/Http/Params';
 import {
-  CreateServerInputSchema,
+  CreateServerInput,
   DeletedResponse,
   ServerEntity,
   ServerSummary,
   UpdateServerInput,
 } from '@/Servers/Servers.schema';
-import { InternalServerError, NotFoundError } from '@/Errors';
+import { InternalServerError, NotFoundError, ServerMonitorModeMismatchError } from '@/Errors';
 
 export const ServersGroup = HttpApiGroup.make('Servers')
   .add(
@@ -26,7 +26,7 @@ export const ServersGroup = HttpApiGroup.make('Servers')
   )
   .add(
     HttpApiEndpoint.post('create', '/servers')
-      .setPayload(CreateServerInputSchema)
+      .setPayload(CreateServerInput)
       .addSuccess(ServerEntity)
       .addError(InternalServerError),
   )
@@ -36,6 +36,7 @@ export const ServersGroup = HttpApiGroup.make('Servers')
       .setPayload(UpdateServerInput)
       .addSuccess(Schema.Array(ServerEntity))
       .addError(NotFoundError)
+      .addError(ServerMonitorModeMismatchError)
       .addError(InternalServerError),
   )
   .add(

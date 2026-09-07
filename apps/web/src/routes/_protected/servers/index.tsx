@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { deleteServer } from "@/api/servers";
 import UnauthorizeBoundary from "@/components/UnauthorizeBoundary";
+import { AddServerDialog } from "@/components/server-form-dialog";
 import ServerTable from "@/components/server-table";
 import { serverQueryOptions } from "@/querys/servers";
 import z from "zod";
@@ -43,7 +44,7 @@ function ServerPage() {
 		? data.filter(
 				(server) =>
 					server.title.toLowerCase().includes(search.toLowerCase()) ||
-					server.idServer.toLowerCase().includes(search.toLowerCase()),
+					String(server.idServer).includes(search),
 			)
 		: data;
 
@@ -56,21 +57,24 @@ function ServerPage() {
 						{data.length} monitored host{data.length === 1 ? "" : "s"}
 					</p>
 				</div>
-				<div className="relative w-full sm:w-64">
-					<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-					<Input
-						type="search"
-						placeholder="Search servers..."
-						className="pl-8"
-						defaultValue={search}
-						onChange={(e) => {
-							const value = e.target.value;
-							navigate({
-								search: () => ({ search: value }),
-								replace: true,
-							});
-						}}
-					/>
+				<div className="flex items-center gap-3">
+					<div className="relative w-full sm:w-64">
+						<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+						<Input
+							type="search"
+							placeholder="Search servers..."
+							className="pl-8"
+							defaultValue={search}
+							onChange={(e) => {
+								const value = e.target.value;
+								navigate({
+									search: () => ({ search: value }),
+									replace: true,
+								});
+							}}
+						/>
+					</div>
+					<AddServerDialog />
 				</div>
 			</div>
 

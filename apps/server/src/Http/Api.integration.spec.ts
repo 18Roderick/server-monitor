@@ -23,7 +23,7 @@ import { PingsService } from '@/Pings/Pings.service';
 
 import { TaskHandlersLive } from '@/Queue/Task.handlers';
 import { QueuePingService } from '@/Queue/QueuePing';
-import { ForbiddenError, NotFoundError } from '@/Errors';
+import { ForbiddenError, NotFoundError, ServerMonitorModeMismatchError } from '@/Errors';
 
 const FakeJwtLive = Layer.succeed(Jwt, {
   sign: (payload: JwtPayload) => Effect.succeed(JSON.stringify(payload)),
@@ -55,6 +55,7 @@ const SERVER_SUMMARY = {
   title: 'Test server',
   status: 'active' as const,
   idTask: null,
+  taskStatus: null,
   ping_max: null,
   ping_min: null,
   ping_avg: null,
@@ -88,10 +89,19 @@ const FakeServersServiceLive = Layer.succeed(ServersService, {
   create: () => Effect.succeed(SERVER_ROW as Server),
   getUserServers: () => Effect.succeed([SERVER_SUMMARY]),
   getServer: () => Effect.succeed([SERVER_SUMMARY]),
-  updateUserServer: (idServer) =>
-    idServer === 'missing'
-      ? new NotFoundError({ message: 'Server not found' })
-      : Effect.succeed([SERVER_ROW as Server]),
+  updateUserServer: (idServer, _idUser, input) => {
+    if (idServer === 'missing') {
+      return new NotFoundError({ message: 'Server not found' });
+    }
+    // SERVER_ROW's worker_type is 'url' — an update sent with mode 'ip'
+    // disagrees with it and must be rejected rather than applied.
+    if (input.mode !== 'url') {
+      return new ServerMonitorModeMismatchError({
+        message: "Server's monitor mode is 'url' and cannot be changed",
+      });
+    }
+    return Effect.succeed([SERVER_ROW as Server]);
+  },
   deleteServer: () => Effect.void,
 });
 
@@ -112,8 +122,12 @@ const FakePingsServiceLive = Layer.succeed(PingsService, {
         id_server: 'server-1',
       },
     ]),
-  update: (id) => Effect.succeed(`This action updates a #${id} ping`),
-  remove: (id) => Effect.succeed(`This action removes a #${id} ping`),
+  update: (_idUser, idPing) =>
+    idPing === 'missing'
+      ? new NotFoundError({ message: 'Ping not found' })
+      : Effect.succeed(`This action updates a #${idPing} ping`),
+  remove: (_idUser, idPing) =>
+    idPing === 'missing' ? new NotFoundError({ message: 'Ping not found' }) : Effect.void,
 });
 
 const TASK_ROW = {
@@ -267,19 +281,37 @@ describe('Servers', () => {
 
   it('POST /servers succeeds', async () => {
     const res = await request('POST', '/servers', {
-      body: { title: 'Test server', url: 'http://example.com' },
+      body: { mode: 'url', title: 'Test server', url: 'http://example.com' },
     });
     expect(res.status).toBe(200);
   });
 
+  it('POST /servers with mode ip but no ip returns 400', async () => {
+    const res = await request('POST', '/servers', {
+      body: { mode: 'ip', title: 'Missing address' },
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('PUT /servers/:id succeeds', async () => {
-    const res = await request('PUT', '/servers/server-1', { body: { title: 'Renamed' } });
+    const res = await request('PUT', '/servers/server-1', {
+      body: { mode: 'url', title: 'Renamed' },
+    });
     expect(res.status).toBe(200);
   });
 
   it('PUT /servers/:id for a missing server returns 404', async () => {
-    const res = await request('PUT', '/servers/missing', { body: { title: 'Renamed' } });
+    const res = await request('PUT', '/servers/missing', {
+      body: { mode: 'url', title: 'Renamed' },
+    });
     expect(res.status).toBe(404);
+  });
+
+  it('PUT /servers/:id with a mode that disagrees with the stored worker_type returns 400', async () => {
+    const res = await request('PUT', '/servers/server-1', {
+      body: { mode: 'ip', ip: '10.0.0.1' },
+    });
+    expect(res.status).toBe(400);
   });
 
   it('DELETE /servers/:id succeeds', async () => {
@@ -303,6 +335,16 @@ describe('Pings', () => {
   it('DELETE /pings/:id succeeds', async () => {
     const res = await request('DELETE', '/pings/ping-1');
     expect(res.status).toBe(200);
+  });
+
+  it('PATCH /pings/:id for a ping the caller does not own returns 404', async () => {
+    const res = await request('PATCH', '/pings/missing');
+    expect(res.status).toBe(404);
+  });
+
+  it('DELETE /pings/:id for a ping the caller does not own returns 404', async () => {
+    const res = await request('DELETE', '/pings/missing');
+    expect(res.status).toBe(404);
   });
 });
 

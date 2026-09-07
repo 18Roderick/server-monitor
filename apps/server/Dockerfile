@@ -5,26 +5,31 @@ RUN corepack enable \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-FROM base AS development
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Installing from the repo root is required: `server` depends on the
+# `@repo/*` workspace packages and a single root pnpm-lock.yaml.
+FROM base AS deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages ./packages
+COPY apps ./apps
 RUN pnpm install --frozen-lockfile
-COPY . .
+
+FROM deps AS development
+WORKDIR /app/apps/server
 EXPOSE 3000
 CMD ["pnpm", "run", "dev"]
 
-FROM base AS build
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm run build
+FROM deps AS build
+RUN pnpm --filter server run build
+# `pnpm deploy` produces a self-contained directory with only server's
+# production dependencies resolved out of the shared workspace lockfile.
+# --legacy: pnpm v10 defaults to injected workspace deps, which this repo
+# doesn't opt into (server has no runtime dependency on the @repo/* packages).
+RUN pnpm --filter server deploy --prod --legacy /app/deploy/server
 
 FROM base AS runtime
 ENV NODE_ENV=production
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/drizzle ./drizzle
+WORKDIR /app/apps/server
+COPY --from=build /app/deploy/server .
 
 EXPOSE 3000
-
 CMD ["node", "dist/Main.js"]

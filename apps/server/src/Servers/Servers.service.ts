@@ -6,7 +6,7 @@ import { pings, servers, tasks, users, type Server } from '@/Db/schemas';
 import { QueueManagerService } from '@/Queue/QueueManager';
 import { QueuePingService } from '@/Queue/QueuePing';
 import { CreateServerInput, UpdateServerInput } from '@/Servers/Servers.schema';
-import { DbError, NotFoundError } from '@/Errors';
+import { DbError, NotFoundError, ServerMonitorModeMismatchError } from '@/Errors';
 
 export class ServersService extends Context.Tag('ServersService')<
   ServersService,
@@ -21,7 +21,7 @@ export class ServersService extends Context.Tag('ServersService')<
       idServer: string,
       idUser: string,
       input: UpdateServerInput,
-    ) => Effect.Effect<unknown, DbError | NotFoundError>;
+    ) => Effect.Effect<unknown, DbError | NotFoundError | ServerMonitorModeMismatchError>;
     readonly deleteServer: (idServer: string, idUser: string) => Effect.Effect<void, DbError>;
   }
 >() {}
@@ -39,7 +39,7 @@ export const ServersServiceLive = Layer.effect(
           count: count().as('count'),
           idServer: servers.id_server,
           createdAt: max(pings.created_at).as('created_at_custom'),
-          avg: sql<number>`round(avg(${pings.avg})::numeric, 4)::numeric`.as('avg'),
+          avg: sql<number>`round(avg(${pings.avg})::numeric, 4)::float8`.as('avg'),
           min: min(pings.min).as('min'),
           max: max(pings.max).as('max'),
         })
@@ -57,6 +57,7 @@ export const ServersServiceLive = Layer.effect(
           title: servers.title,
           status: servers.status,
           idTask: tasks.id_task,
+          taskStatus: tasks.status,
           ping_max: lastPing.max,
           ping_min: lastPing.min,
           ping_avg: lastPing.avg,
@@ -69,9 +70,10 @@ export const ServersServiceLive = Layer.effect(
     return {
       create: (input, idUser) =>
         Effect.gen(function* () {
-          const equalWhere = input.ip
-            ? and(eq(servers.ip, input.ip), eq(servers.id_user, idUser))
-            : and(eq(servers.url, input.url as string), eq(servers.id_user, idUser));
+          const equalWhere =
+            input.mode === 'ip'
+              ? and(eq(servers.ip, input.ip), eq(servers.id_user, idUser))
+              : and(eq(servers.url, input.url), eq(servers.id_user, idUser));
 
           const existing = yield* Effect.tryPromise({
             try: () =>
@@ -93,11 +95,11 @@ export const ServersServiceLive = Layer.effect(
               db
                 .insert(servers)
                 .values({
-                  url: input.url,
+                  url: input.mode === 'url' ? input.url : undefined,
+                  ip: input.mode === 'ip' ? input.ip : undefined,
                   title: input.title,
                   description: input.description,
-                  ip: input.ip,
-                  worker_type: input.ip ? 'server' : 'url',
+                  worker_type: input.mode === 'ip' ? 'server' : 'url',
                   id_user: idUser,
                 })
                 .returning(),
@@ -137,8 +139,19 @@ export const ServersServiceLive = Layer.effect(
             catch: (cause) => new DbError({ cause }),
           });
 
-          if (existing.length < 1) {
+          const currentServer = existing[0];
+          if (!currentServer) {
             return yield* new NotFoundError({ message: 'Server not found' });
+          }
+
+          // A Server's Monitor Mode is fixed at creation (CONTEXT.md) — an
+          // update can't switch `worker_type`, so a payload whose `mode`
+          // disagrees with the stored one is rejected rather than applied.
+          const incomingWorkerType = input.mode === 'ip' ? 'server' : 'url';
+          if (incomingWorkerType !== currentServer.worker_type) {
+            return yield* new ServerMonitorModeMismatchError({
+              message: `Server's monitor mode is '${currentServer.worker_type === 'server' ? 'ip' : 'url'}' and cannot be changed`,
+            });
           }
 
           yield* Effect.tryPromise({
@@ -146,11 +159,10 @@ export const ServersServiceLive = Layer.effect(
               db
                 .update(servers)
                 .set({
-                  url: input.url,
+                  url: input.mode === 'url' ? input.url : undefined,
+                  ip: input.mode === 'ip' ? input.ip : undefined,
                   title: input.title,
                   description: input.description,
-                  ip: input.ip,
-                  ...(input.ip !== undefined ? { worker_type: 'server' as const } : {}),
                 })
                 .where(equalWhere),
             catch: (cause) => new DbError({ cause }),

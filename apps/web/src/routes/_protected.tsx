@@ -1,5 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
+import { useServerEvents } from "@/hooks/useServerEvents";
+
 export const Route = createFileRoute("/_protected")({
 	beforeLoad: async ({ location, context }) => {
 		const auth = context.auth;
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/_protected")({
 		}
 	},
 	component: () => {
+		useServerEvents();
 		return (
 			<>
 				<Outlet />
