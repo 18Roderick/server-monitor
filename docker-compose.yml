@@ -1,7 +1,6 @@
 services:
   database:
     image: postgres:16-alpine
-    container_name: ping-database
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -36,7 +35,6 @@ services:
 
   valkey:
     image: valkey/valkey:9-alpine
-    container_name: ping-cache
     restart: unless-stopped
     networks:
       - ping-net
