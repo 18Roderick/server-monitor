@@ -1,7 +1,7 @@
 FROM node:20-slim AS base
 RUN corepack enable \
   && apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ iputils-ping \
+  && apt-get install -y --no-install-recommends python3 make g++ fping \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 

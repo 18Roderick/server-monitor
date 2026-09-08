@@ -1,33 +1,45 @@
 import { describe, expect, it } from 'vitest';
-import { Schema } from 'effect';
 
-import { PingResult } from '@/Ping/ping';
+import { parseFpingOutput } from '@/Ping/ping';
 
-describe('PingResult', () => {
-  it('decodes the ping package raw output, coercing numeric-looking strings', () => {
-    const raw = {
-      inputHost: 'example.com',
-      host: 'example.com',
-      alive: true,
-      output: 'PING example.com...',
-      time: 12.3,
-      times: [12.3, 11.9],
-      numeric_host: '93.184.216.34',
-      min: '11.900',
-      max: '12.300',
-      avg: '12.100',
-      stddev: '0.200',
-      packetLoss: '0.000',
-    };
+describe('parseFpingOutput', () => {
+  it('parses a fully alive fping -C line into stats', () => {
+    const result = parseFpingOutput('example.com : 12.3 11.9 12.5\n');
 
-    const result = Schema.decodeUnknownSync(PingResult)(raw);
-    expect(result.min).toBe(11.9);
-    expect(result.max).toBe(12.3);
-    expect(result.avg).toBe(12.1);
-    expect(result.packetLoss).toBe(0);
+    expect(result).not.toBeNull();
+    expect(result?.alive).toBe(true);
+    expect(result?.times).toEqual([12.3, 11.9, 12.5]);
+    expect(result?.packetLoss).toBe(0);
+    expect(result?.min).toBeCloseTo(11.9);
+    expect(result?.max).toBeCloseTo(12.5);
+    expect(result?.avg).toBeCloseTo((12.3 + 11.9 + 12.5) / 3);
   });
 
-  it('rejects output missing required fields', () => {
-    expect(() => Schema.decodeUnknownSync(PingResult)({ alive: true })).toThrow();
+  it('treats "-" tokens as lost packets and computes partial loss', () => {
+    const result = parseFpingOutput('example.com : 12.3 - 12.5\n');
+
+    expect(result?.alive).toBe(true);
+    expect(result?.times).toEqual([12.3, 12.5]);
+    expect(result?.packetLoss).toBeCloseTo(100 / 3);
+  });
+
+  it('reports fully dead when every packet is lost', () => {
+    const result = parseFpingOutput('example.com : - - -\n');
+
+    expect(result?.alive).toBe(false);
+    expect(result?.times).toEqual([]);
+    expect(result?.packetLoss).toBe(100);
+    expect(result?.min).toBe(0);
+    expect(result?.max).toBe(0);
+    expect(result?.avg).toBe(0);
+  });
+
+  it('returns null for output with no parseable target line', () => {
+    expect(parseFpingOutput('')).toBeNull();
+    expect(parseFpingOutput('some unrelated fping error\n')).toBeNull();
+  });
+
+  it('returns null when the line is a non-numeric error message', () => {
+    expect(parseFpingOutput('badhost : Name or service not known\n')).toBeNull();
   });
 });

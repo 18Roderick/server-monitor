@@ -36,7 +36,6 @@
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "luxon": "^3.7.2",
-    "ping": "^1.0.0",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
